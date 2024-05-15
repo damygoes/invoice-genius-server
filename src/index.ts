@@ -5,6 +5,7 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express, { Express } from 'express';
 import config from '../config/config';
+import authController from './auth/auth.controller';
 import userController from './entities/user/user.controller';
 import { corsOptions } from './utils/corsOptions';
 
@@ -19,6 +20,7 @@ app.use(compression());
 
 // Centralized API router
 const apiRouter = express.Router();
+apiRouter.use('/auth', authController);
 apiRouter.use('/users', userController);
 
 // Apply /api/v1 prefix to the centralized router
