@@ -1,20 +1,30 @@
-import { PrismaClient } from '@prisma/client';
+import bodyParser from 'body-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import * as dotenv from 'dotenv';
-import express from 'express';
+import express, { Express } from 'express';
+import config from '../config/config';
+import userController from './entities/user/user.controller';
+import { corsOptions } from './utils/corsOptions';
+
 dotenv.config();
-const prisma = new PrismaClient();
+const app: Express = express();
 
-const app = express();
+// Middleware
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(compression());
 
-const port = process.env.PORT || 3000;
+// Centralized API router
+const apiRouter = express.Router();
+apiRouter.use('/users', userController);
 
-app.get("/users", async (req, res) => {
-    const users = await prisma.User.findMany();
-    res.json(users);
-  });
+// Apply /api/v1 prefix to the centralized router
+app.use('/api/v1', apiRouter);
 
-
-// start the server
-app.listen(port, async () => {
-    console.log(`Server is running on port ${port}...`);
+// Start the server
+app.listen(config.PORT, async () => {
+  console.log(`Server is running on port ${config.PORT}...`);
 });
