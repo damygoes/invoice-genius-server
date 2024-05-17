@@ -4,9 +4,11 @@ CREATE TYPE "UserType" AS ENUM ('private', 'business');
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "name" TEXT,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "phone" TEXT,
     "mobile" TEXT,
     "profilePicture" TEXT,

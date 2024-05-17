@@ -1,9 +1,10 @@
-import express from 'express';
-import { login, register } from './auth.service';
+import express from "express";
+import { login, logout, register } from "./auth.service";
 
 const authController = express.Router();
 
-authController.get('/login', login);
-authController.get('/register', register);
+authController.post("/login", login);
+authController.post("/register", register);
+authController.post("/logout", logout);
 
 export default authController;
