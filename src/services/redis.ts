@@ -1,5 +1,5 @@
-import * as dotenv from "dotenv";
-import { createClient } from "redis";
+import * as dotenv from 'dotenv';
+import { createClient } from 'redis';
 dotenv.config();
 
 export const redisClient = createClient({

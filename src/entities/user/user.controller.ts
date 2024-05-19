@@ -1,10 +1,10 @@
 import express from 'express';
-import { createUser, getUserById, getUsers } from './user.service';
+import { getUser, getUsers, onboardUser } from './user.service';
 
 const userController = express.Router();
 
 userController.get('/', getUsers);
-userController.post('/', createUser);
-userController.get('/:id', getUserById);
+userController.post('/onboard-user', onboardUser);
+userController.post('/:userIdentifier', getUser);
 
 export default userController;
