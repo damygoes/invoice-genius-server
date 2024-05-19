@@ -9,19 +9,19 @@ const prodDbUrl = process.env.PROD_DATABASE_URL;
 const dbURI = NODE_ENV === 'development' ? devDbUrl : prodDbUrl;
 
 if (!devDbUrl || !prodDbUrl) {
-    throw new Error('Database URL is not set');
+  throw new Error('Database URL is not set');
 }
 
 if (NODE_ENV === 'development' && !devDbUrl) {
-    throw new Error('Database URL is not set');
+  throw new Error('Database URL is not set');
 }
 
 if (NODE_ENV === 'production' && !prodDbUrl) {
-    throw new Error('Database URL is not set');
+  throw new Error('Database URL is not set');
 }
-
 
 export default {
-    NODE_ENV,
-    dbURI
-}
+  NODE_ENV,
+  dbURI,
+  PORT,
+};
