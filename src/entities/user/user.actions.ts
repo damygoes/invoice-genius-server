@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { OnboardingBusinessProfileDTO } from '../../types/OnboardingBusinessProfileDTO';
 import { KindeUserDTO } from '../../types/User';
+import { transformOnboardingBusinessProfileRequestBody } from '../../utils/transformOnboardingBusinessProfileRequestBody';
 import { transformUserReqBodyToDbSchema } from '../../utils/transformUserReqBodyToDbSchema';
 
 const prisma = new PrismaClient();
@@ -50,4 +52,31 @@ const getUserWithId = async (id: string) => {
   }
 };
 
-export { createNewUserInDatabase, getUserWithEmail, getUserWithId };
+const createUserBusinessProfile = async (
+  userID: string,
+  profile: OnboardingBusinessProfileDTO
+) => {
+  try {
+    const userInDb = await getUserWithId(userID);
+    if (!userInDb) {
+      return;
+    }
+    const transformedUserProfile =
+      transformOnboardingBusinessProfileRequestBody(profile, userID);
+    const newUserBusinessProfile = await prisma.businessUserProfile.create({
+      data: {
+        ...transformedUserProfile,
+      },
+    });
+    return newUserBusinessProfile;
+  } catch (error) {
+    console.error('Error creating user business profile: ', error);
+  }
+};
+
+export {
+  createNewUserInDatabase,
+  createUserBusinessProfile,
+  getUserWithEmail,
+  getUserWithId,
+};
