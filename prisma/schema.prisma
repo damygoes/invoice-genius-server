@@ -8,21 +8,22 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
+  id                  String                 @id @default(cuid())
   firstName           String
   lastName            String
   username            String?
-  email               String               @unique
+  email               String                 @unique
   phone               String?
   mobile              String?
   profilePicture      String?
   address             String?
-  userType            UserType             @default(private)
+  userType            UserType               @default(private)
   selectedServices    Services[]
-  onboarded           Boolean              @default(false)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  onboarded           Boolean                @default(false)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
   businessUserProfile BusinessUserProfile?
+  subscriptions       SubscriptionsService[]
 }
 
 model BusinessUserProfile {
@@ -42,6 +43,23 @@ model BusinessUserProfile {
   user            User     @relation(fields: [userId], references: [id])
 }
 
+model SubscriptionsService {
+  id                   String             @id @default(cuid())
+  userId               String
+  subscriptionName     String
+  subscriptionCategory String
+  recurringInterval    RecurringInterval?
+  subscribedOn         DateTime
+  expiresOn            DateTime
+  setReminder          Boolean            @default(false)
+  reminderPeriod       DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
 enum UserType {
   private
   business
@@ -51,4 +69,10 @@ enum Services {
   receiptManagement
   subscriptionManagement
   invoicing
+}
+
+enum RecurringInterval {
+  monthly
+  quarterly
+  yearly
 }
