@@ -1,15 +1,15 @@
-// import { GrantType, setupKinde } from "@kinde-oss/kinde-node-express";
+import { GrantType, KindeClient } from "@kinde-oss/kinde-nodejs-sdk";
 
-// const config = {
-//   clientId: "<YOUR_CLIENT_ID>",
-//   issuerBaseUrl: "https://<YOUR_SUBDOMAIN>.kinde.com",
-//   siteUrl: "http://localhost:3000",
-//   secret: "<YOUR_CLIENT_SECRET>",
-//   redirectUrl: "http://localhost:3000",
-//   scope: "openid profile email",
-//   grantType: GrantType.AUTHORIZATION_CODE, //or CLIENT_CREDENTIALS or PKCE
-//   unAuthorisedUrl: "http://localhost:3000/unauthorised",
-//   postLogoutRedirectUrl: "http://localhost:3000",
-// };
+import * as dotenv from "dotenv";
+dotenv.config();
 
-// setupKinde(config, app);
+const options = {
+  domain: process.env.KINDE_DOMAIN,
+  clientId: process.env.KINDE_CLIENT_ID,
+  clientSecret: process.env.KINDE_CLIENT_SECRET,
+  redirectUri: process.env.KINDE_REDIRECT_URI,
+  logoutRedirectUri: process.env.KINDE_LOGOUT_REDIRECT_URI,
+  grantType: GrantType.PKCE,
+};
+
+export const kindeClient = new KindeClient(options);
