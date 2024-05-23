@@ -9,10 +9,6 @@ import { authenticate } from '../middleware/authMiddleware';
 
 const authRouter = express.Router();
 
-// authRouter.post("/login", login);
-// authRouter.post("/register", register);
-// authRouter.post("/logout", logout);
-
 authRouter.post('/request-otp', requestOTP);
 authRouter.post('/verify-otp', verifyOTPCode);
 authRouter.post('/refresh-token', authenticate, refreshToken);

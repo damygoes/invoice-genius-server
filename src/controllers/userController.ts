@@ -137,42 +137,36 @@ const onboardUser = async (req: Request, res: Response) => {
 };
 
 const getUser = async (req: CustomRequest, res: Response) => {
-  console.log('req body: ', req.body);
-  console.log('req params: ', req.params);
-  console.log('req query: ', req.query);
-  console.log('req headers: ', req.headers);
-  console.log('req cookies: ', req.cookies);
-  console.log('req user: ', req.user);
-  // const { id } = req.params;
-  // const existingUser = await getUserWithId(id);
-  // if (!existingUser) {
-  //   return res.status(404).json({ error: "User not found" });
-  // }
-  // if (existingUser.userType === "private") {
-  //   return res.json(existingUser);
-  // }
+  const { id } = req.params;
+  const existingUser = await getUserWithId(id);
+  if (!existingUser) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  if (existingUser.userType === 'private') {
+    return res.json(existingUser);
+  }
 
-  // if (existingUser.userType === "business") {
-  //   try {
-  //     const userBusinessProfile = await prisma.businessUserProfile.findUnique({
-  //       where: {
-  //         userId: existingUser.id,
-  //       },
-  //     });
-  //     if (userBusinessProfile) {
-  //       return res.json(userBusinessProfile);
-  //     } else {
-  //       return res
-  //         .status(404)
-  //         .json({ error: "User business profile not found" });
-  //     }
-  //   } catch (error) {
-  //     res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+  if (existingUser.userType === 'business') {
+    try {
+      const userBusinessProfile = await prisma.businessUserProfile.findUnique({
+        where: {
+          userId: existingUser.id,
+        },
+      });
+      if (userBusinessProfile) {
+        return res.json(userBusinessProfile);
+      } else {
+        return res
+          .status(404)
+          .json({ error: 'User business profile not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
 };
 
-const updateUserProfile = async (req: Request, res: Response) => {
+const updateUserProfile = async (req: CustomRequest, res: Response) => {
   const { id } = req.params;
   const existingUser = await getUserWithId(id);
   if (!existingUser) {
@@ -188,6 +182,7 @@ const updateUserProfile = async (req: Request, res: Response) => {
       });
       res.json(updatedUser);
     } catch (error) {
+      console.error('Error updating user profile: ', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }

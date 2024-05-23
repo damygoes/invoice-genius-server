@@ -58,7 +58,3 @@ export const deleteRefreshToken = (token: string, userEmail: string) => {
     return null;
   }
 };
-
-/**
- * eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvZ3doZWVsZXJzcHlrQGdtYWlsLmNvbSIsImlhdCI6MTcxNjQ2NTExOSwiZXhwIjoxNzE3MDY5OTE5fQ.J9iHtnGRDILz7UsN0XMsRfHNtu8Ki1cOT8AT2UKVvbk
- */

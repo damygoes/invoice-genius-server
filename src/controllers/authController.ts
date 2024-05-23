@@ -16,8 +16,6 @@ import { CustomRequest } from '../types/CustomRequest';
 import { generateOTP } from '../utils/generateOTP';
 dotenv.config();
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET!;
-
 const requestOTP = async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email) return res.status(400).send('Email is required');
@@ -44,11 +42,13 @@ const verifyOTPCode = async (req: Request, res: Response) => {
 
   const accessToken = generateAccessToken(email);
   const refreshToken = await generateAndStoreRefreshToken(email);
+  const user = await getUserWithEmail(email);
 
   res.status(200).json({
     message: 'OTP verified',
     accessToken,
     refreshToken,
+    user,
   });
 };
 
@@ -67,9 +67,6 @@ const refreshToken = async (req: CustomRequest, res: Response) => {
 
 const logout = async (req: CustomRequest, res: Response) => {
   const { refreshToken } = req.body;
-  console.log('refreshToken', refreshToken);
-  console.log('req.user', req.user);
-  console.log('token', req.headers['authorization']);
 
   const headerToken = req.headers['authorization'];
   const token = headerToken?.split(' ')[1];

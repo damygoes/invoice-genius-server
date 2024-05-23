@@ -16,12 +16,12 @@ model User {
   phone               String?
   mobile              String?
   profilePicture      String?
-  address             String?
   userType            UserType               @default(private)
   selectedServices    Services[]
   onboarded           Boolean                @default(false)
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
+  address             Json
   businessUserProfile BusinessUserProfile?
   RefreshTokens       RefreshToken[]
   subscriptions       SubscriptionsService[]
