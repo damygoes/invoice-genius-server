@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { SubscriptionDTO } from '../../types/Subscription';
+import { SubscriptionDTO } from '../types/Subscription';
 
 const prisma = new PrismaClient();
 

@@ -5,9 +5,10 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express, { Express } from 'express';
 import config from '../config/config';
-import authController from './auth/auth.controller';
-import subscriptionsManagementServiceController from './entities/subscriptionsManagementService/subscriptionsService.controller';
-import userController from './entities/user/user.controller';
+
+import authRouter from './routes/authRoutes';
+import subscriptionsServiceRouter from './routes/subscriptionsServiceRoutes';
+import userRouter from './routes/userRoutes';
 import { redisClient } from './services/redis';
 import { corsOptions } from './utils/corsOptions';
 
@@ -23,12 +24,9 @@ app.use(express.json());
 
 // Centralized API router
 const apiRouter = express.Router();
-apiRouter.use('/auth', authController);
-apiRouter.use('/users', userController);
-apiRouter.use(
-  '/subscriptions-management',
-  subscriptionsManagementServiceController
-);
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/users', userRouter);
+apiRouter.use('/subscriptions-management', subscriptionsServiceRouter);
 
 // Apply /api/v1 prefix to the centralized router
 app.use('/api/v1', apiRouter);

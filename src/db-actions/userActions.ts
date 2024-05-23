@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { OnboardingBusinessProfileDTO } from '../../types/OnboardingBusinessProfileDTO';
-import { KindeUserDTO } from '../../types/User';
-import { transformOnboardingBusinessProfileRequestBody } from '../../utils/transformOnboardingBusinessProfileRequestBody';
-import { transformUserReqBodyToDbSchema } from '../../utils/transformUserReqBodyToDbSchema';
+import { OnboardingBusinessProfileDTO } from '../types/OnboardingBusinessProfileDTO';
+import { EmailOnlyUser, KindeUserDTO } from '../types/User';
+import { transformOnboardingBusinessProfileRequestBody } from '../utils/transformOnboardingBusinessProfileRequestBody';
+import { transformUserReqBodyToDbSchema } from '../utils/transformUserReqBodyToDbSchema';
 
 const prisma = new PrismaClient();
 
-const createNewUserInDatabase = async (user: KindeUserDTO) => {
+const createNewUserInDatabase = async (user: KindeUserDTO | EmailOnlyUser) => {
   try {
     const transformedUser = transformUserReqBodyToDbSchema(user);
     const newUser = await prisma.user.create({
