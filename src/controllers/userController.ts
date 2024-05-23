@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 import {
-  createNewUserInDatabase,
   createUserBusinessProfile,
-  getUserWithEmail,
   getUserWithId,
-} from './user.actions';
+} from '../db-actions/userActions';
+import { CustomRequest } from '../types/CustomRequest';
 
 const prisma = new PrismaClient();
 
@@ -18,52 +17,52 @@ const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-const getUser = async (req: Request, res: Response) => {
-  const { userIdentifier } = req.params;
-  const userIdentifierIsEmail = userIdentifier.includes('@');
+// const getUser = async (req: Request, res: Response) => {
+//   const { userIdentifier } = req.params;
+//   const userIdentifierIsEmail = userIdentifier.includes("@");
 
-  if (userIdentifierIsEmail) {
-    const user = await getUserWithEmail(userIdentifier);
-    if (user) {
-      res.json(user);
-    } else {
-      try {
-        const newUser = await createNewUserInDatabase({
-          ...req.body,
-        });
-        if (newUser === null || newUser === undefined) {
-          return res.status(500).json({ error: 'Internal Server Error' });
-        }
-        return res.json({
-          message: 'User created successfully',
-          userId: newUser.id,
-        });
-      } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-    }
-  } else {
-    const user = await getUserWithId(userIdentifier);
-    if (user) {
-      res.json(user);
-    } else {
-      try {
-        const newUser = await createNewUserInDatabase({
-          ...req.body,
-        });
-        if (newUser === null || newUser === undefined) {
-          return res.status(500).json({ error: 'Internal Server Error' });
-        }
-        return res.json({
-          message: 'User created successfully',
-          userId: newUser.id,
-        });
-      } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-    }
-  }
-};
+//   if (userIdentifierIsEmail) {
+//     const user = await getUserWithEmail(userIdentifier);
+//     if (user) {
+//       res.json(user);
+//     } else {
+//       try {
+//         const newUser = await createNewUserInDatabase({
+//           ...req.body,
+//         });
+//         if (newUser === null || newUser === undefined) {
+//           return res.status(500).json({ error: "Internal Server Error" });
+//         }
+//         return res.json({
+//           message: "User created successfully",
+//           userId: newUser.id,
+//         });
+//       } catch (error) {
+//         res.status(500).json({ error: "Internal Server Error" });
+//       }
+//     }
+//   } else {
+//     const user = await getUserWithId(userIdentifier);
+//     if (user) {
+//       res.json(user);
+//     } else {
+//       try {
+//         const newUser = await createNewUserInDatabase({
+//           ...req.body,
+//         });
+//         if (newUser === null || newUser === undefined) {
+//           return res.status(500).json({ error: "Internal Server Error" });
+//         }
+//         return res.json({
+//           message: "User created successfully",
+//           userId: newUser.id,
+//         });
+//       } catch (error) {
+//         res.status(500).json({ error: "Internal Server Error" });
+//       }
+//     }
+//   }
+// };
 
 const onboardUser = async (req: Request, res: Response) => {
   const { userType, services, user, business } = req.body;
@@ -137,34 +136,40 @@ const onboardUser = async (req: Request, res: Response) => {
   }
 };
 
-const getUserProfile = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const existingUser = await getUserWithId(id);
-  if (!existingUser) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-  if (existingUser.userType === 'private') {
-    return res.json(existingUser);
-  }
+const getUser = async (req: CustomRequest, res: Response) => {
+  console.log('req body: ', req.body);
+  console.log('req params: ', req.params);
+  console.log('req query: ', req.query);
+  console.log('req headers: ', req.headers);
+  console.log('req cookies: ', req.cookies);
+  console.log('req user: ', req.user);
+  // const { id } = req.params;
+  // const existingUser = await getUserWithId(id);
+  // if (!existingUser) {
+  //   return res.status(404).json({ error: "User not found" });
+  // }
+  // if (existingUser.userType === "private") {
+  //   return res.json(existingUser);
+  // }
 
-  if (existingUser.userType === 'business') {
-    try {
-      const userBusinessProfile = await prisma.businessUserProfile.findUnique({
-        where: {
-          userId: existingUser.id,
-        },
-      });
-      if (userBusinessProfile) {
-        return res.json(userBusinessProfile);
-      } else {
-        return res
-          .status(404)
-          .json({ error: 'User business profile not found' });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  }
+  // if (existingUser.userType === "business") {
+  //   try {
+  //     const userBusinessProfile = await prisma.businessUserProfile.findUnique({
+  //       where: {
+  //         userId: existingUser.id,
+  //       },
+  //     });
+  //     if (userBusinessProfile) {
+  //       return res.json(userBusinessProfile);
+  //     } else {
+  //       return res
+  //         .status(404)
+  //         .json({ error: "User business profile not found" });
+  //     }
+  //   } catch (error) {
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
 };
 
 const updateUserProfile = async (req: Request, res: Response) => {
@@ -202,4 +207,4 @@ const updateUserProfile = async (req: Request, res: Response) => {
   }
 };
 
-export { getUser, getUserProfile, getUsers, onboardUser, updateUserProfile };
+export { getUser, getUsers, onboardUser, updateUserProfile };

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "OTPStore" ALTER COLUMN "otp" DROP NOT NULL,
+ALTER COLUMN "otpExpiration" DROP NOT NULL;

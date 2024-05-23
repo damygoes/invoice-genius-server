@@ -24,3 +24,7 @@ export type KindeUserDTO = {
   email: string | null;
   picture: string | null;
 };
+
+export type EmailOnlyUser = {
+  email: string;
+};

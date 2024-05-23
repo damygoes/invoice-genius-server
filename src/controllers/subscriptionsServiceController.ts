@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
-import { transformSubscriptionPayload } from '../../utils/transformSubscriptionPayload';
+import { transformSubscriptionPayload } from '../utils/transformSubscriptionPayload';
 
 const prisma = new PrismaClient();
 
