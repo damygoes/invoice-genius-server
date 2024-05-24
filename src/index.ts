@@ -7,6 +7,7 @@ import express, { Express } from 'express';
 import config from '../config/config';
 
 import authRouter from './routes/authRoutes';
+import avatarRouter from './routes/avatarUploadRoutes';
 import subscriptionsServiceRouter from './routes/subscriptionsServiceRoutes';
 import userRouter from './routes/userRoutes';
 import { redisClient } from './services/redis';
@@ -27,6 +28,7 @@ const apiRouter = express.Router();
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', userRouter);
 apiRouter.use('/subscriptions-management', subscriptionsServiceRouter);
+apiRouter.use('/avatar', avatarRouter);
 
 // Apply /api/v1 prefix to the centralized router
 app.use('/api/v1', apiRouter);
