@@ -3,8 +3,3 @@ export const blobToBase64 = async (blob: Blob) => {
   const base64String = Buffer.from(arrayBuffer).toString('base64');
   return base64String;
 };
-
-/**
- * const arrayBuffer = await downloadedAvatarBlob.arrayBuffer();
-      const base64String = Buffer.from(arrayBuffer).toString("base64");
- */
