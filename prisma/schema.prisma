@@ -27,6 +27,7 @@ model User {
   InvoiceImage        InvoiceImage[]
   ProfilePicture      ProfilePicture?
   RefreshTokens       RefreshToken[]
+  SavedClient         SavedClient[]
   subscriptions       SubscriptionsService[]
   UserReceiptImage    UserReceiptImage[]
 }
@@ -111,6 +112,20 @@ model InvoiceImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model SavedClient {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  address   Json
+  phone     String?
+  mobile    String?
+  createdAt DateTime @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  belongsTo String
+  user      User     @relation(fields: [belongsTo], references: [id])
 }
 
 enum UserType {
