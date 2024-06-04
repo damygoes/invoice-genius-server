@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { SavedClient } from "../types/SavedClient";
+import { PrismaClient } from '@prisma/client';
+import { SavedClient } from '../types/SavedClient';
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ const createNewSavedClient = async (client: SavedClient) => {
     });
     return newClient;
   } catch (error) {
-    console.error("Error creating saved client: ", error);
+    console.error('Error creating saved client: ', error);
   }
 };
 
@@ -24,13 +24,13 @@ const getUserSavedClients = async (userId: string) => {
 
     return clients;
   } catch (error) {
-    console.error("Error getting user saved clients: ", error);
+    console.error('Error getting user saved clients: ', error);
   }
 };
 
 const getClientThatBelongsToUserByEmail = async (
   userId: string,
-  clientEmail: string,
+  clientEmail: string
 ) => {
   try {
     const client = await prisma.savedClient.findFirst({
@@ -42,13 +42,13 @@ const getClientThatBelongsToUserByEmail = async (
 
     return client;
   } catch (error) {
-    console.error("Error getting client that belongs to user: ", error);
+    console.error('Error getting client that belongs to user: ', error);
   }
 };
 
 const getClientThatBelongsToUserById = async (
   userId: string,
-  clientId: string,
+  clientId: string
 ) => {
   try {
     const client = await prisma.savedClient.findFirst({
@@ -60,7 +60,7 @@ const getClientThatBelongsToUserById = async (
 
     return client;
   } catch (error) {
-    console.error("Error getting client that belongs to user: ", error);
+    console.error('Error getting client that belongs to user: ', error);
   }
 };
 
@@ -75,13 +75,13 @@ const getUserSavedClientDetails = async (userId: string, clientId: string) => {
 
     return client;
   } catch (error) {
-    console.error("Error getting user saved client details: ", error);
+    console.error('Error getting user saved client details: ', error);
   }
 };
 
 const updateUsersSavedClient = async (
   clientId: string,
-  client: SavedClient,
+  client: SavedClient
 ) => {
   try {
     const updatedClient = await prisma.savedClient.update({
@@ -93,7 +93,7 @@ const updateUsersSavedClient = async (
 
     return updatedClient;
   } catch (error) {
-    console.error("Error updating saved client: ", error);
+    console.error('Error updating saved client: ', error);
   }
 };
 
@@ -105,7 +105,7 @@ const deleteSavedClientInDb = async (clientId: string) => {
       },
     });
   } catch (error) {
-    console.error("Error deleting saved client: ", error);
+    console.error('Error deleting saved client: ', error);
   }
 };
 
