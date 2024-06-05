@@ -26,6 +26,7 @@ model User {
   businessUserProfile BusinessUserProfile?
   ProfilePicture      ProfilePicture?
   refreshTokens       RefreshToken[]
+  SavedClient         SavedClient[]
   subscriptions       SubscriptionsService[]
   invoices            UserInvoices[]
   receiptImages       UserReceiptImage[]
@@ -120,9 +121,11 @@ model SavedClient {
   address   Json
   phone     String?
   mobile    String?
+  belongsTo String
   createdAt DateTime          @db.Timestamptz(6)
   updatedAt DateTime          @updatedAt @db.Timestamptz(6)
   invoices  Invoices[]
+  user      User              @relation(fields: [belongsTo], references: [id])
   users     UserSavedClient[]
 }
 

@@ -46,7 +46,9 @@ const uploadAvatarHandler = async (req: CustomRequest, res: Response) => {
         message: 'Avatar not found',
       });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error('Error uploading avatar: ', error);
+  }
 };
 
 const getUserAvatar = async (req: CustomRequest, res: Response) => {
