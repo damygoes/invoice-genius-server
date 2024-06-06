@@ -1,14 +1,48 @@
 import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
-import { uploadInvoiceToSupabaseBucket } from '../db-actions/invoiceActions';
+import { Response } from 'express';
+import {
+  getInvoiceDetails,
+  getUserInvoices,
+  uploadInvoiceToSupabaseBucket,
+} from '../db-actions/invoiceActions';
+import { getUserWithEmail } from '../db-actions/userActions';
 import { generateInvoicePDF } from '../services/invoicePDFGenerationService';
 import { sendInvoiceEmail } from '../services/sendInvoiceEmailService';
 import { CustomRequest } from '../types/CustomRequest';
 
 const prisma = new PrismaClient();
 
-const getInvoices = async (req: Request, res: Response) => {
+const getInvoices = async (req: CustomRequest, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const existingUser = await getUserWithEmail(user.email);
+
+  if (!existingUser) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  if (existingUser.email !== user.email) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   try {
+    const invoices = await getUserInvoices(existingUser.id);
+    if (!invoices) {
+      return res.status(404).json({ error: 'Invoices not found' });
+    }
+    const invoiceDetails = await Promise.all(
+      invoices.map(async (invoice) => {
+        return await getInvoiceDetails(invoice.invoiceId);
+      })
+    );
+    if (!invoiceDetails) {
+      return res.status(404).json({ error: 'Invoice details not found' });
+    }
+    res.status(200).json(invoiceDetails);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -20,50 +54,6 @@ const createInvoice = async (req: CustomRequest, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-// const sendInvoice = async (req: CustomRequest, res: Response) => {
-//   console.log("user: ", req.user);
-//   console.log("payload: ", req.body);
-//   const user = req.user;
-
-//   if (!user) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   const existingUser = await getUserWithEmail(user.email);
-
-//   if (!existingUser) {
-//     return res.status(404).json({ error: "User not found" });
-//   }
-
-//   if (existingUser.email !== user.email) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   if (!req.body) {
-//     return res.status(400).json({ error: "Bad Request" });
-//   }
-
-//   const existingClient = await getClientThatBelongsToUserById(
-//     existingUser.id,
-//     req.body.client,
-//   );
-
-//   if (!existingClient) {
-//     return res.status(404).json({ error: "Client not found" });
-//   }
-
-//   if (existingClient.belongsTo !== existingUser.id) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   console.log("existingClient: ", existingClient);
-
-//   try {
-//   } catch (error) {
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 
 const sendInvoice = async (req: CustomRequest, res: Response) => {
   const user = req.user;
