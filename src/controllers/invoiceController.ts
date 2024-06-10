@@ -1,14 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import { Response } from 'express';
 import {
-  getInvoiceDetails,
-  getUserInvoices,
+  fetchInvoiceFromSupabaseBucket,
   uploadInvoiceToSupabaseBucket,
 } from '../db-actions/invoiceActions';
 import { getUserWithEmail } from '../db-actions/userActions';
-import { generateInvoicePDF } from '../services/invoicePDFGenerationService';
 import { sendInvoiceEmail } from '../services/sendInvoiceEmailService';
 import { CustomRequest } from '../types/CustomRequest';
+import { blobToBase64 } from '../utils/blobToBase64';
 
 const prisma = new PrismaClient();
 
@@ -30,20 +29,53 @@ const getInvoices = async (req: CustomRequest, res: Response) => {
   }
 
   try {
-    const invoices = await getUserInvoices(existingUser.id);
-    if (!invoices) {
-      return res.status(404).json({ error: 'Invoices not found' });
-    }
-    const invoiceDetails = await Promise.all(
-      invoices.map(async (invoice) => {
-        return await getInvoiceDetails(invoice.invoiceId);
-      })
-    );
-    if (!invoiceDetails) {
-      return res.status(404).json({ error: 'Invoice details not found' });
-    }
-    res.status(200).json(invoiceDetails);
+    const result = await prisma.$transaction(async (prisma) => {
+      // Get user invoices
+      const invoices = await prisma.userInvoices.findMany({
+        where: { userId: existingUser.id },
+        include: { invoice: true },
+      });
+
+      if (!invoices || invoices.length === 0) {
+        throw new Error('Invoices not found');
+      }
+
+      // Fetch invoice details including PDF base64 URL
+      const invoiceDetails = await Promise.all(
+        invoices.map(async ({ invoice }) => {
+          const invoiceData = await prisma.invoices.findUnique({
+            where: { id: invoice.id },
+            include: { images: true },
+          });
+
+          if (!invoiceData) {
+            throw new Error('Invoice details not found');
+          }
+
+          // Fetch the PDF from Supabase
+          const pdfBlob = await fetchInvoiceFromSupabaseBucket(
+            invoiceData.images[0].image
+          );
+          if (!pdfBlob) {
+            throw new Error('Error fetching PDF');
+          }
+
+          // Convert the Blob to a base64 string
+          const pdfBase64 = await blobToBase64(pdfBlob);
+
+          return {
+            ...invoiceData,
+            pdfBase64,
+          };
+        })
+      );
+
+      return invoiceDetails;
+    });
+
+    res.status(200).json(result);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -74,12 +106,26 @@ const sendInvoice = async (req: CustomRequest, res: Response) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { client, items, invoiceSubTotal, invoiceVAT, invoiceTotal, dueDate } =
-    req.body;
-
   if (!req.body) {
     return res.status(400).json({ error: 'Bad Request' });
   }
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'Bad Request' });
+  }
+
+  const invoiceData = JSON.parse(req.body.invoiceData);
+  const pdfBuffer = req.file.buffer;
+
+  const {
+    client,
+    items,
+    invoiceSubTotal,
+    invoiceVAT,
+    invoiceTotal,
+    dueDate,
+    invoiceNumber,
+  } = invoiceData;
 
   const existingClient = await prisma.savedClient.findUnique({
     where: { id: client },
@@ -102,18 +148,9 @@ const sendInvoice = async (req: CustomRequest, res: Response) => {
       if (!businessProfile) {
         throw new Error('Business profile not found');
       }
-      // Generate PDF
-      const pdfBuffer = await generateInvoicePDF({
-        businessProfile,
-        clientDetails: existingClient,
-        items,
-        invoiceSubTotal,
-        invoiceVAT,
-        invoiceTotal,
-        dueDate,
-      });
-      // Define file path and name
+      // Define filePath for the PDF
       const filePath = `invoices/${existingUser.id}/${Date.now()}.pdf`;
+
       // Upload PDF to Supabase bucket
       const bucketUrl = await uploadInvoiceToSupabaseBucket(
         pdfBuffer,
@@ -127,6 +164,7 @@ const sendInvoice = async (req: CustomRequest, res: Response) => {
         data: {
           clientId: client,
           invoiceDate: new Date(),
+          invoiceNumber: invoiceNumber,
           dueDate: dueDate,
           amount: invoiceTotal,
           vat: invoiceVAT,
@@ -140,8 +178,6 @@ const sendInvoice = async (req: CustomRequest, res: Response) => {
           },
         },
       });
-      // Send email
-      await sendInvoiceEmail(existingClient.email, pdfBuffer);
       // Save userId and invoiceId to UserInvoices
       await prisma.userInvoices.create({
         data: {
@@ -149,9 +185,22 @@ const sendInvoice = async (req: CustomRequest, res: Response) => {
           invoiceId: invoice.id,
         },
       });
-      return invoice;
+      return { invoice, filePath, existingClient };
     });
-    res.status(200).json(result);
+
+    // Fetch the PDF from Supabase bucket
+    const pdfBlob = await fetchInvoiceFromSupabaseBucket(result.filePath);
+    if (!pdfBlob) {
+      throw new Error('Error fetching PDF');
+    }
+
+    // Convert the Blob to a base64 string
+    const pdfBase64 = await blobToBase64(pdfBlob);
+
+    // Send email outside the transaction
+    await sendInvoiceEmail(result.existingClient.email, pdfBuffer);
+
+    res.status(200).json({ invoice: result.invoice, pdfBase64 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });

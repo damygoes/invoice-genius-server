@@ -47,6 +47,10 @@ model BusinessUserProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   businessAddress Json
+  bankName        String?
+  bic             String?
+  iban            String?
+  payPalEmail     String?
   user            User     @relation(fields: [userId], references: [id])
 }
 
@@ -108,8 +112,6 @@ model InvoiceImage {
   id        String   @id @default(cuid())
   invoiceId String
   image     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   invoice   Invoices @relation(fields: [invoiceId], references: [id])
 }
 
@@ -130,20 +132,21 @@ model SavedClient {
 }
 
 model Invoices {
-  id           String         @id @default(cuid())
-  clientId     String
-  invoiceDate  DateTime
-  dueDate      DateTime
-  amount       Float
-  vat          Float
-  subTotal     Float
-  status       String
-  invoiceItems Json[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  images       InvoiceImage[]
-  client       SavedClient    @relation(fields: [clientId], references: [id])
-  users        UserInvoices[]
+  id            String         @id @default(cuid())
+  clientId      String
+  invoiceDate   DateTime
+  dueDate       DateTime
+  amount        Float
+  vat           Float
+  subTotal      Float
+  status        String
+  invoiceItems  Json[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  invoiceNumber String
+  images        InvoiceImage[]
+  client        SavedClient    @relation(fields: [clientId], references: [id])
+  users         UserInvoices[]
 }
 
 model UserSavedClient {

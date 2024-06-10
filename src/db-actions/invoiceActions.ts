@@ -32,6 +32,21 @@ const uploadInvoiceToSupabaseBucket = async (
   }
 };
 
+const fetchInvoiceFromSupabaseBucket = async (filePath: string) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('invoicePDFs')
+      .download(filePath);
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching file: ', error);
+    return null;
+  }
+};
+
 const getUserInvoices = async (userId: string) => {
   try {
     const userInvoices = await prisma.userInvoices.findMany({
@@ -60,4 +75,9 @@ const getInvoiceDetails = async (invoiceId: string) => {
   }
 };
 
-export { getInvoiceDetails, getUserInvoices, uploadInvoiceToSupabaseBucket };
+export {
+  fetchInvoiceFromSupabaseBucket,
+  getInvoiceDetails,
+  getUserInvoices,
+  uploadInvoiceToSupabaseBucket,
+};

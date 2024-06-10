@@ -9,6 +9,7 @@ export const generateInvoicePDF = async ({
   invoiceVAT,
   invoiceTotal,
   dueDate,
+  invoiceNumber,
 }: {
   businessProfile: any;
   clientDetails: any;
@@ -17,6 +18,7 @@ export const generateInvoicePDF = async ({
   invoiceVAT: number;
   invoiceTotal: number;
   dueDate: string;
+  invoiceNumber: string;
 }): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
@@ -43,6 +45,7 @@ export const generateInvoicePDF = async ({
     doc.text(`Address: ${clientAddress}`);
     doc.moveDown();
 
+    doc.text(`Invoice Number: ${invoiceNumber}`);
     doc.text(`Issue Date: ${new Date().toDateString()}`);
     doc.text(`Due Date: ${formatDate(dueDate)}`);
     doc.moveDown();
