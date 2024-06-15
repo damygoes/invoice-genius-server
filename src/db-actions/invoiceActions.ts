@@ -47,6 +47,19 @@ const fetchInvoiceFromSupabaseBucket = async (filePath: string) => {
   }
 };
 
+const deleteFileFromSupabaseBucket = async (filePath: string) => {
+  try {
+    const { error } = await supabase.storage
+      .from('invoicePDFs')
+      .remove([filePath]);
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting file: ', error);
+  }
+};
+
 const getUserInvoices = async (userId: string) => {
   try {
     const userInvoices = await prisma.userInvoices.findMany({
@@ -76,6 +89,7 @@ const getInvoiceDetails = async (invoiceId: string) => {
 };
 
 export {
+  deleteFileFromSupabaseBucket,
   fetchInvoiceFromSupabaseBucket,
   getInvoiceDetails,
   getUserInvoices,
