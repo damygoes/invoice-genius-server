@@ -1,7 +1,6 @@
+import { PrismaClient } from '@prisma/client';
 import { Response } from 'express';
 import {
-  createNewSavedClient,
-  deleteSavedClientInDb,
   getClientThatBelongsToUserByEmail,
   getClientThatBelongsToUserById,
   getUserSavedClients,
@@ -10,6 +9,8 @@ import {
 import { getUserWithEmail } from '../db-actions/userActions';
 import { CustomRequest } from '../types/CustomRequest';
 import { transformSavedClientFormToDbSchema } from '../utils/transformSavedClient';
+
+const prisma = new PrismaClient();
 
 const getUsersSavedClients = async (req: CustomRequest, res: Response) => {
   const user = req.user!;
@@ -89,6 +90,7 @@ const createSavedClient = async (req: CustomRequest, res: Response) => {
   if (!user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
+
   const existingUser = await getUserWithEmail(user.email);
 
   if (!existingUser) {
@@ -100,10 +102,28 @@ const createSavedClient = async (req: CustomRequest, res: Response) => {
       payload,
       existingUser.id
     );
-    const newClient = await createNewSavedClient(transformedPayload);
-    res.status(201).json(newClient);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const newClient = await tx.savedClient.create({
+        data: transformedPayload,
+      });
+
+      await tx.userSavedClient.create({
+        data: {
+          userId: existingUser.id,
+          clientId: newClient.id,
+        },
+      });
+
+      return newClient;
+    });
+
+    res.status(201).json(result);
   } catch (error) {
+    console.error(error); // Log the error for debugging
     res.status(500).json({ message: 'Error creating saved client' });
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
@@ -152,9 +172,6 @@ const updateSavedClient = async (req: CustomRequest, res: Response) => {
 };
 
 const deleteSavedClient = async (req: CustomRequest, res: Response) => {
-  console.log('req user: ', req.user);
-  console.log('params: ', req.params);
-
   const user = req.user!;
   const savedClientId = req.params.id;
 
@@ -186,10 +203,31 @@ const deleteSavedClient = async (req: CustomRequest, res: Response) => {
   }
 
   try {
-    const deletedSavedClient = await deleteSavedClientInDb(savedClientId);
-    res.status(200).json(deletedSavedClient);
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete association in UserSavedClient table
+      await tx.userSavedClient.deleteMany({
+        where: {
+          userId: existingUser.id,
+          clientId: savedClientId,
+        },
+      });
+
+      // Delete the saved client
+      const deletedSavedClient = await tx.savedClient.delete({
+        where: {
+          id: savedClientId,
+        },
+      });
+
+      return deletedSavedClient;
+    });
+
+    res.status(200).json(result);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error deleting saved client' });
+  } finally {
+    await prisma.$disconnect();
   }
 };
 

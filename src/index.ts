@@ -8,6 +8,7 @@ import config from '../config/config';
 
 import authRouter from './routes/authRoutes';
 import avatarRouter from './routes/avatarUploadRoutes';
+import invoiceRouter from './routes/invoiceRoutes';
 import savedClientsRouter from './routes/savedClientRoutes';
 import subscriptionsServiceRouter from './routes/subscriptionsServiceRoutes';
 import userRouter from './routes/userRoutes';
@@ -31,6 +32,7 @@ apiRouter.use('/users', userRouter);
 apiRouter.use('/subscriptions-management', subscriptionsServiceRouter);
 apiRouter.use('/avatar', avatarRouter);
 apiRouter.use('/clients', savedClientsRouter);
+apiRouter.use('/invoices', invoiceRouter);
 
 // Apply /api/v1 prefix to the centralized router
 app.use('/api/v1', apiRouter);
